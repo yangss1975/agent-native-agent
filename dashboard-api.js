@@ -14,12 +14,14 @@
 const path = require('node:path');
 const crypto = require('node:crypto');
 const os = require('node:os');
+const fs = require('node:fs');
 const fsp = require('node:fs/promises');
 const { execFile } = require('node:child_process');
 const relgraph = require('./graph-index.js');   // 업무 항목·지식·문서를 한 그래프로 — NodeRel 색인(graph-index.sqlite)
 const codexSettings = require('./codex-settings.js');
 const permissionMode = require('./permission-mode.js');
 const { createAgentLog } = require('./agent-log.js');
+const naverMail = require('./naver-mail.js');   // 네이버 메일 IMAP 읽기 전용(의존성 없음)
 
 // ---- System: 재시작 ----
 const STARTED_AT = new Date().toISOString();
@@ -181,6 +183,14 @@ function createDashboardApi(core, opts) {
     return s;
   }
   const clip = (v, n) => String(v == null ? '' : v).slice(0, n);
+  const AREAS = ['law', 'corp'];   // 업무 구분: 변호사 업무 · 주식회사 업무 (없으면 공통)
+  // 사건·상담·프로젝트에 넣기 — matter id를 걸면 area도 그 Matter를 따른다. ''이면 뗀다.
+  const setMatter = (s, x, m) => {
+    if (m === undefined) return null; if (m === '' || m === null) { delete x.matter; return null; }
+    const mt = (s.matters || []).find((y) => y.id === m); if (!mt) return 'matter not found';
+    x.matter = mt.id; if (mt.area) x.area = mt.area; else delete x.area; return null;
+  };
+  const setArea = (x, a) => { if (a === undefined) return null; if (a === '' || a === null) { delete x.area; return null; } if (!AREAS.includes(a)) return 'area must be law|corp|""'; x.area = a; return null; };
   const newId = (p) => p + Date.now().toString(36) + crypto.randomBytes(2).toString('hex');
   const CLIENT_EVENTS = { 'tab.view': /^[a-z]{2,20}(\.[a-z]{2,20})?$/ };
   const isExample = (x) => /^[nae]-ex-/.test(String((x && x.id) || ''));   // 예전 판(seed.js)이 넣은 예제 id
@@ -494,10 +504,147 @@ function createDashboardApi(core, opts) {
   }
 
   // ---- 라우트 ----
+  // ---- 나의 비서: 아침 브리핑 · 마감·기일 알림 · 네이버 메일 ----
+  // 설정은 work-graph.json 옆 assistant.json, 메일 비밀번호는 mail-secret.json(0600, 화면으로 돌려주지 않는다).
+  const ASSIST_FILE = path.join(path.dirname(DATA_FILE), 'assistant.json');
+  const MAIL_SECRET = path.join(path.dirname(DATA_FILE), 'mail-secret.json');
+  const loadAssist = () => {
+    const a = readJsonStrict(ASSIST_FILE, () => ({})) || {};
+    a.briefing = { on: true, time: '08:00', tz: 'Asia/Seoul', ...(a.briefing || {}) };
+    a.mail = { user: '', uidValidity: 0, lastUid: 0, lastSync: '', error: '', added: 0, ...(a.mail || {}) };
+    if (!Array.isArray(a.briefings)) a.briefings = [];
+    return a;
+  };
+  const saveAssist = (a) => writeJsonAtomic(ASSIST_FILE, a);
+  const readSecret = () => { try { return JSON.parse(fs.readFileSync(MAIL_SECRET, 'utf8')); } catch { return null; } };
+  const writeSecret = (o) => { fs.mkdirSync(path.dirname(MAIL_SECRET), { recursive: true }); fs.writeFileSync(MAIL_SECRET, JSON.stringify(o), { mode: 0o600 }); fs.chmodSync(MAIL_SECRET, 0o600); };
+  // 서버는 UTC로 돌 수 있다 — 날짜·시각은 사람의 시간대(기본 Asia/Seoul) 벽시계로 계산한다
+  const nowTz = (tz) => { try { return new Date(new Date().toLocaleString('en-US', { timeZone: tz || loadAssist().briefing.tz })); } catch { return new Date(); } };
+  const localYmd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const addD = (str, n) => { const d = new Date(str + 'T00:00:00'); d.setDate(d.getDate() + n); return localYmd(d); };
+  const DOWK = ['일', '월', '화', '수', '목', '금', '토'];
+  const kday = (str) => { const d = new Date(str + 'T00:00:00'); return `${d.getMonth() + 1}/${d.getDate()}(${DOWK[d.getDay()]})`; };
+  const AREA_LABEL = { law: '⚖️ 변호사', corp: '🏢 회사', '': '공통' };
+  const matterName = (s, x) => { const m = x && x.matter && (s.matters || []).find((y) => y.id === x.matter); return m ? m.name : ''; };
+  const itemLabel = (s, x) => { const m = matterName(s, x); return `${m ? `[${m}] ` : ''}${x.title || x.subject || x.text || ''}`; };
+
+  // 마감·기일 알림 — 지난 마감, 오늘 마감, 내일 마감, 다가오는 기일(7일), 한 시간 안에 시작하는 일정. id는 같은 알림을 두 번 울리지 않게 고정.
+  function alertsOf(s, now = nowTz()) {
+    const today = localYmd(now), tmr = addD(today, 1), wk = addD(today, 7), out = [];
+    for (const t of s.items || []) {
+      if (t.done || !t.due) continue;
+      if (t.due < today) out.push({ id: `${t.id}:late`, level: 'late', area: t.area || '', ref: t.id, date: t.due, text: `마감 지남(${kday(t.due)}) · ${itemLabel(s, t)}` });
+      else if (t.due === today) out.push({ id: `${t.id}:today:${today}`, level: 'today', area: t.area || '', ref: t.id, date: t.due, text: `오늘 마감 · ${itemLabel(s, t)}` });
+      else if (t.due === tmr) out.push({ id: `${t.id}:d1:${today}`, level: 'soon', area: t.area || '', ref: t.id, date: t.due, text: `내일 마감 · ${itemLabel(s, t)}` });
+    }
+    for (const e of s.events || []) {
+      if (e.done || !e.date) continue;
+      if (e.kind === 'hearing' && e.date >= today && e.date <= wk) {
+        const dn = Math.round((new Date(e.date + 'T00:00:00') - new Date(today + 'T00:00:00')) / 86400000);
+        out.push({ id: `${e.id}:hearing:${today}`, level: dn === 0 ? 'today' : dn <= 3 ? 'soon' : 'info', area: e.area || '', ref: e.id, date: e.date,
+          text: `${dn === 0 ? '오늘' : `D-${dn}`} 기일 ${kday(e.date)}${e.time ? ' ' + e.time : ''} · ${itemLabel(s, e)}` });
+      }
+      if (e.date === today && e.time) {
+        const start = new Date(`${e.date}T${e.time}:00`), mins = Math.round((start - now) / 60000);
+        if (mins >= 0 && mins <= 60) out.push({ id: `${e.id}:soon:${e.date}`, level: 'now', area: e.area || '', ref: e.id, date: e.date, text: `${mins}분 뒤 시작 · ${e.time} ${itemLabel(s, e)}` });
+      }
+    }
+    const rank = { now: 0, late: 1, today: 2, soon: 3, info: 4 };
+    return out.sort((a, b) => rank[a.level] - rank[b.level] || a.date.localeCompare(b.date));
+  }
+  // 아침 브리핑 글 — 업무 구분별로 오늘 할 일·일정, 다가오는 기일·마감, 새 메일
+  function briefingText(s, now = nowTz()) {
+    const today = localYmd(now), wk = addD(today, 7), L = [];
+    L.push(`☀️ ${now.getMonth() + 1}월 ${now.getDate()}일 ${DOWK[now.getDay()]}요일 아침 브리핑`);
+    const late = (s.items || []).filter((t) => !t.done && t.due && t.due < today);
+    if (late.length) L.push('', `⚠️ 마감 지난 할 일 ${late.length}개`, ...late.slice(0, 8).map((t) => `- ${kday(t.due)} ${itemLabel(s, t)}`));
+    for (const a of ['law', 'corp', '']) {
+      const ev = (s.events || []).filter((e) => e.date === today && (e.area || '') === a).sort((x, y) => (x.time || '99').localeCompare(y.time || '99'));
+      const tk = (s.items || []).filter((t) => !t.done && t.due === today && (t.area || '') === a);
+      if (!ev.length && !tk.length) continue;
+      L.push('', AREA_LABEL[a]);
+      for (const e of ev) L.push(`- ${e.kind === 'hearing' ? '🔔 기일 ' : '📅 '}${e.time || '종일'} ${itemLabel(s, e)}`);
+      for (const t of tk) L.push(`- ☐ ${itemLabel(s, t)}`);
+    }
+    const up = [...(s.events || []).filter((e) => e.kind === 'hearing' && e.date > today && e.date <= wk).map((e) => `- 🔔 ${kday(e.date)}${e.time ? ' ' + e.time : ''} 기일 · ${itemLabel(s, e)}`),
+      ...(s.items || []).filter((t) => !t.done && t.due > today && t.due <= wk).map((t) => `- ☐ ${kday(t.due)} 마감 · ${itemLabel(s, t)}`)].sort();
+    if (up.length) L.push('', '📆 앞으로 7일', ...up.slice(0, 12));
+    const inbox = (s.emails || []).filter((m) => m.status === 'inbox').length, todo = (s.emails || []).filter((m) => m.status === 'todo').length;
+    if (inbox || todo) L.push('', `✉️ 새 메일 ${inbox}통 · 처리할 메일 ${todo}통`);
+    if (L.length === 1) L.push('', '오늘은 잡힌 일정과 마감이 없어요.');
+    return L.join('\n');
+  }
+  // 에이전트에게 브리핑을 넘긴다 — 최근 요청의 세션 컨텍스트로, 입력창이 비어 있고 준비됐을 때만
+  let lastCtx = null;
+  async function sendBriefingToAgent(text) {
+    const ctx = lastCtx; if (!ctx) return 'no-session';
+    try {
+      if (!(await ctx.hasSession()) || !(await ctx.agentAlive())) return 'agent-off';
+      if (ctx.lastDraft) return 'draft';
+      const msg = `[Briefing] 아침 브리핑 시간이에요. 아래 내용으로 오늘 할 일을 짧고 읽기 쉽게 정리해 채팅으로 알려 주세요(변호사 · 회사 구분 유지, 급한 것 먼저). 데이터는 바꾸지 마세요.\n\n${text}`;
+      const r = await ctx.enqueue(async () => { if (!(await ctx.waitInputReady())) return 'busy'; await ctx.injectText(msg); return 'sent'; });
+      return r;
+    } catch (e) { return 'error: ' + e.message; }
+  }
+  async function makeBriefing(force) {
+    const a = loadAssist(), now = nowTz(a.briefing.tz), today = localYmd(now);
+    let b = a.briefings.find((x) => x.date === today);
+    let s; try { s = loadData(); } catch { return null; }
+    if (!b || force) { b = { date: today, text: briefingText(s, now), at: new Date().toISOString(), sent: '' }; a.briefings = [...a.briefings.filter((x) => x.date !== today), b].slice(-14); }
+    if (!b.sent) { const r = await sendBriefingToAgent(b.text); if (r === 'sent') b.sent = new Date().toISOString(); b.tried = r; }
+    saveAssist(a); broadcastAll({ kind: 'assistant' });
+    return b;
+  }
+  // 메일 가져오기 — 새 메일은 '새 메일'(inbox)로. 사건·프로젝트의 의뢰인·사건번호·연락처가 보낸 사람·제목에 있으면 그 사건에 넣는다.
+  let mailBusy = false;
+  async function syncMail() {
+    if (mailBusy) return { error: '이미 가져오는 중이에요' };
+    const sec = readSecret(), a = loadAssist();
+    if (!sec || !sec.user || !sec.pass) return { error: '네이버 메일이 연결되지 않았어요' };
+    mailBusy = true;
+    try {
+      const r = await naverMail.fetchRecent({ user: sec.user, pass: sec.pass, sinceUid: a.mail.lastUid, uidValidity: a.mail.uidValidity });
+      const s = loadData(); const seen = new Set(s.emails.map((m) => m.mid).filter(Boolean)); let added = 0;
+      const open = (s.matters || []).filter((m) => m.status !== 'closed');
+      for (const m of r.messages) {
+        if (m.messageId && seen.has(m.messageId)) continue;
+        const x = { id: newId('m'), mid: m.messageId, uid: m.uid, src: 'naver', from: clip(m.from, 200), subject: clip(m.subject, 300), summary: clip(m.summary, 600), status: 'inbox', at: m.date || new Date().toISOString(), by: 'naver' };
+        const hay = `${x.from} ${x.subject}`.toLowerCase();
+        const hit = open.find((mt) => [mt.client, mt.number, mt.contact].some((k) => k && k.length >= 2 && hay.includes(String(k).toLowerCase())));
+        if (hit) { x.matter = hit.id; x.area = hit.area; }
+        s.emails.push(x); added++;
+      }
+      if (s.emails.length > 600) s.emails = s.emails.filter((m, i) => m.status !== 'done' || i >= s.emails.length - 600);
+      if (added) { s.version = (s.version || 1) + 1; saveData(s); broadcastAll({ kind: 'data', version: s.version }); }
+      a.mail = { ...a.mail, user: sec.user, uidValidity: r.uidValidity, lastUid: Math.max(a.mail.uidValidity === r.uidValidity ? a.mail.lastUid : 0, ...r.messages.map((m) => m.uid), 0), lastSync: new Date().toISOString(), error: '', added };
+      saveAssist(a); broadcastAll({ kind: 'assistant' });
+      return { ok: true, added };
+    } catch (e) {
+      a.mail = { ...a.mail, error: e.message, lastSync: new Date().toISOString() }; saveAssist(a); broadcastAll({ kind: 'assistant' });
+      return { error: e.message };
+    } finally { mailBusy = false; }
+  }
+  let broadcastAll = () => {};
+  // 1분마다: 브리핑 시각이 지났고 오늘 아직 못 보냈으면 보낸다(보내기는 3시간까지 다시 시도). 10분마다 메일.
+  if (!process.env.ANA_TEST) {
+    let tick = 0;
+    setInterval(() => {
+      tick++;
+      try {
+        const a = loadAssist(), now = nowTz(a.briefing.tz), hm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        const b = a.briefings.find((x) => x.date === localYmd(now));
+        const [h, m] = a.briefing.time.split(':').map(Number), due = h * 60 + m, cur = now.getHours() * 60 + now.getMinutes();
+        if (a.briefing.on && hm >= a.briefing.time && cur - due <= 180 && (!b || !b.sent)) makeBriefing(false);
+      } catch {}
+      if (tick % 10 === 1 && readSecret()) syncMail();
+    }, 60000).unref();
+  }
+
   const extraApi = (req, res, url, ctx) => routes(req, res, url, ctx);
   async function routes(req, res, url, ctx) {
     const p = url.pathname;
     const { commit, broadcast, csrfOk, jsonBody } = ctx;
+    lastCtx = ctx; broadcastAll = ctx.broadcast;   // 예약 일(브리핑·메일)이 쓸 최근 세션
 
     // ---- 내 계정 ----
     if (p === '/api/me' && req.method === 'GET') {
@@ -854,9 +1001,11 @@ function createDashboardApi(core, opts) {
         const time = String(body.time || '').trim();
         if (time && !/^\d{2}:\d{2}$/.test(time)) return sendJson(res, 400, { error: 'time must be HH:MM' }), true;
         const ev = { id: newId('e'), title: title.slice(0, 200), date, time, done: false, by: actor(req) };
+        if (body.kind === 'hearing') ev.kind = 'hearing';   // 기일(재판·조정·변론 등)
+        { const e = setArea(ev, body.area) || setMatter(s, ev, body.matter); if (e) return sendJson(res, 400, { error: e }), true; }
         s.events.push(ev);
         // from: 메모면 SPAWNED(메모에서 나온 일정), 할일이면 SCHEDULED_AS(그 할일을 할 시간)
-        const err = linkFrom(s, body.from, ev.id, { Note: 'SPAWNED', Task: 'SCHEDULED_AS' });
+        const err = linkFrom(s, body.from, ev.id, { Note: 'SPAWNED', Email: 'SPAWNED', Task: 'SCHEDULED_AS' });
         if (err) return sendJson(res, 400, { error: err }), true;
         audit(actor(req), 'event.add', title.slice(0, 80));
         createdId = ev.id;
@@ -885,8 +1034,9 @@ function createDashboardApi(core, opts) {
       let s; try { s = loadData(); } catch (e) { return sendJson(res, 500, { error: 'state file corrupt', detail: e.message }), true; }
       const it = { id: newId('a'), title: title.slice(0, 200), done: false, by: actor(req) };
       if (body.due && /^\d{4}-\d{2}-\d{2}$/.test(String(body.due))) it.due = String(body.due);
+      { const e = setArea(it, body.area) || setMatter(s, it, body.matter); if (e) return sendJson(res, 400, { error: e }), true; }
       s.items.push(it);
-      const err = linkFrom(s, body.from, it.id, { Note: 'SPAWNED' });   // from: 이 할일이 나온 메모
+      const err = linkFrom(s, body.from, it.id, { Note: 'SPAWNED', Email: 'SPAWNED' });   // from: 이 할일이 나온 메모·이메일
       if (err) return sendJson(res, 400, { error: err }), true;
       touchUser(actor(req)); audit(actor(req), 'todo.add', title.slice(0, 80));
       s.version = (s.version || 1) + 1; saveData(s);
@@ -910,6 +1060,129 @@ function createDashboardApi(core, opts) {
       return sendJson(res, 200, { ok: true, version: s.version }), true;
     }
 
+    // ---- 나의 비서: 브리핑 · 알림 · 메일 ----
+    if (p === '/api/assistant' && req.method === 'GET') {
+      let st; try { st = loadData(); } catch (e) { return sendJson(res, 500, { error: 'state file corrupt', detail: e.message }), true; }
+      const a = loadAssist(), sec = readSecret();
+      return sendJson(res, 200, { briefing: a.briefing, today: a.briefings.find((x) => x.date === localYmd(nowTz(a.briefing.tz))) || null,
+        preview: briefingText(st), alerts: alertsOf(st),
+        mail: { connected: !!(sec && sec.user), user: sec ? sec.user : '', lastSync: a.mail.lastSync, error: a.mail.error, added: a.mail.added, busy: mailBusy } }), true;
+    }
+    if (p === '/api/assistant' && req.method === 'POST') {
+      if (!csrfOk(req)) return sendJson(res, 403, { error: 'forbidden (origin/content-type)' }), true;
+      const body = await jsonBody(req, res); if (!body) return true;
+      const a = loadAssist();
+      if (body.briefing) {
+        if (body.briefing.time !== undefined) { if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(String(body.briefing.time))) return sendJson(res, 400, { error: 'time must be HH:MM' }), true; a.briefing.time = String(body.briefing.time); }
+        if (body.briefing.on !== undefined) a.briefing.on = !!body.briefing.on;
+      }
+      saveAssist(a); broadcastAll({ kind: 'assistant' });
+      return sendJson(res, 200, { ok: true, briefing: a.briefing }), true;
+    }
+    if (p === '/api/assistant/briefing' && req.method === 'POST') {   // 지금 브리핑 받기(다시 만들어 에이전트에게)
+      if (!csrfOk(req)) return sendJson(res, 403, { error: 'forbidden (origin/content-type)' }), true;
+      const a = loadAssist(), today = localYmd(nowTz(a.briefing.tz));
+      a.briefings = a.briefings.filter((x) => x.date !== today); saveAssist(a);
+      const b = await makeBriefing(true);
+      return b ? (sendJson(res, 200, { ok: true, sent: !!b.sent, tried: b.tried, text: b.text }), true) : (sendJson(res, 500, { error: 'briefing failed' }), true);
+    }
+    if (p === '/api/mail/config' && req.method === 'POST') {
+      if (!csrfOk(req)) return sendJson(res, 403, { error: 'forbidden (origin/content-type)' }), true;
+      const body = await jsonBody(req, res); if (!body) return true;
+      if (body.remove) { try { fs.unlinkSync(MAIL_SECRET); } catch {} const a = loadAssist(); a.mail = { user: '', uidValidity: 0, lastUid: 0, lastSync: '', error: '', added: 0 }; saveAssist(a); audit(actor(req), 'mail.disconnect', ''); return sendJson(res, 200, { ok: true }), true; }
+      const user = String(body.user || '').trim().replace(/@naver\.com$/i, ''), pass = String(body.pass || '');
+      if (!user || !pass) return sendJson(res, 400, { error: '아이디와 비밀번호를 넣어 주세요' }), true;
+      try { await naverMail.fetchRecent({ user, pass, days: 1, max: 1 }); }   // 연결 확인만
+      catch (e) { return sendJson(res, 400, { error: e.message }), true; }
+      writeSecret({ user, pass });
+      const a = loadAssist(); a.mail = { user, uidValidity: 0, lastUid: 0, lastSync: '', error: '', added: 0 }; saveAssist(a);
+      audit(actor(req), 'mail.connect', user);
+      const r = await syncMail();
+      return sendJson(res, 200, { ok: true, ...r }), true;
+    }
+    if (p === '/api/mail/sync' && req.method === 'POST') {
+      if (!csrfOk(req)) return sendJson(res, 403, { error: 'forbidden (origin/content-type)' }), true;
+      const r = await syncMail();
+      return sendJson(res, r.error ? 400 : 200, r), true;
+    }
+
+    // 업무 구분 바꾸기 — {id, area:'law'|'corp'|'', matter?} 어느 종류의 항목이든
+    if (p === '/api/area' && req.method === 'POST') {
+      if (!csrfOk(req)) return sendJson(res, 403, { error: 'forbidden (origin/content-type)' }), true;
+      const body = await jsonBody(req, res); if (!body) return true;
+      let s; try { s = loadData(); } catch (e) { return sendJson(res, 500, { error: 'state file corrupt', detail: e.message }), true; }
+      const x = relgraph.workLists().flatMap((l) => s[l] || []).find((y) => y && y.id === body.id);
+      if (!x) return sendJson(res, 404, { error: 'not found' }), true;
+      const err = body.matter ? setMatter(s, x, body.matter) : (delete x.matter, setArea(x, body.area === undefined ? '' : body.area)); if (err) return sendJson(res, 400, { error: err }), true;
+      s.version = (s.version || 1) + 1; saveData(s);
+      broadcast({ kind: 'data', version: s.version });
+      return sendJson(res, 200, { ok: true, version: s.version }), true;
+    }
+
+    // 이메일 정리·공부/업무 기록 — {list:'emails'|'logs', action:'add'|'update'|'remove', id?, ...필드}
+    if (p === '/api/mywork' && req.method === 'POST') {
+      if (!csrfOk(req)) return sendJson(res, 403, { error: 'forbidden (origin/content-type)' }), true;
+      const body = await jsonBody(req, res); if (!body) return true;
+      const FIELDS = {
+        emails: (b, x, st) => {
+          if (b.from !== undefined) x.from = clip(b.from, 200);
+          if (b.subject !== undefined) x.subject = clip(b.subject, 300);
+          if (b.summary !== undefined) x.summary = clip(b.summary, 5000);
+          if (b.status !== undefined && b.status !== 'inbox') { if (!['todo', 'waiting', 'ref', 'done'].includes(b.status)) return 'status must be inbox|todo|waiting|ref|done'; x.status = b.status; }
+          if (b.status === 'inbox') x.status = 'inbox';
+          const ae = setArea(x, b.area) || setMatter(st, x, b.matter); if (ae) return ae;
+          if (!String(x.subject || x.summary || '').trim()) return 'subject or summary required';
+        },
+        logs: (b, x, st) => {
+          if (b.date !== undefined) { if (!/^\d{4}-\d{2}-\d{2}$/.test(String(b.date))) return 'date must be YYYY-MM-DD'; x.date = String(b.date); }
+          if (b.kind !== undefined) { if (!['study', 'work'].includes(b.kind)) return 'kind must be study|work'; x.kind = b.kind; }
+          if (b.text !== undefined) x.text = clip(b.text, 5000);
+          if (b.minutes !== undefined) { const m = Math.round(Number(b.minutes) || 0); x.minutes = Math.max(0, Math.min(m, 1440)); }
+          const ae = setArea(x, b.area) || setMatter(st, x, b.matter); if (ae) return ae;
+          if (!String(x.text || '').trim()) return 'text required';
+          if (!x.date) return 'date required';
+        },
+        // 사건·상담(변호사) · 프로젝트(회사)
+        matters: (b, x) => {
+          if (b.area !== undefined) { if (!AREAS.includes(b.area)) return 'area must be law|corp'; x.area = b.area; }
+          if (b.type !== undefined) { if (!['case', 'consult', 'project'].includes(b.type)) return 'type must be case|consult|project'; x.type = b.type; }
+          for (const k of ['name', 'client', 'number', 'court', 'contact', 'memo']) if (b[k] !== undefined) x[k] = clip(b[k], k === 'memo' ? 3000 : 200).trim();
+          if (b.status !== undefined) { if (!['open', 'closed'].includes(b.status)) return 'status must be open|closed'; x.status = b.status; }
+          if (!x.name) return 'name required';
+          if (!x.area) return 'area required';
+          if (!x.type) x.type = x.area === 'law' ? 'case' : 'project';
+        },
+      };
+      const set = FIELDS[body.list];
+      if (!set) return sendJson(res, 400, { error: 'list must be emails|logs|matters' }), true;
+      let s; try { s = loadData(); } catch (e) { return sendJson(res, 500, { error: 'state file corrupt', detail: e.message }), true; }
+      const arr = s[body.list];
+      let id;
+      if (body.action === 'add') {
+        const x = { id: newId({ emails: 'm', logs: 'g', matters: 'c' }[body.list]), by: actor(req), at: new Date().toISOString() };
+        if (body.list === 'emails') x.status = 'todo'; else if (body.list === 'logs') x.kind = 'work'; else x.status = 'open';
+        const err = set(body, x, s); if (err) return sendJson(res, 400, { error: err }), true;
+        arr.push(x); id = x.id;
+        audit(actor(req), body.list + '.add', String(x.subject || x.text || x.name || '').split('\n')[0].slice(0, 80));
+      } else if (body.action === 'update') {
+        const x = arr.find((y) => y.id === body.id);
+        if (!x) return sendJson(res, 404, { error: 'not found' }), true;
+        const next = { ...x }; const err = set(body, next, s); if (err) return sendJson(res, 400, { error: err }), true;
+        Object.assign(x, next); id = x.id;
+        if (body.list === 'matters') for (const l of relgraph.workLists()) for (const y of s[l] || []) if (y && y.matter === x.id) y.area = x.area;
+      } else if (body.action === 'remove') {
+        const x = arr.find((y) => y.id === body.id);
+        if (!x) return sendJson(res, 404, { error: 'not found' }), true;
+        if (!owns(x, actor(req))) return sendJson(res, 403, { error: 'Only the author can delete this' }), true;
+        s[body.list] = arr.filter((y) => y.id !== body.id);
+        if (body.list === 'matters') for (const l of relgraph.workLists()) for (const y of s[l] || []) if (y && y.matter === x.id) delete y.matter;   // 지운 사건에 걸린 항목은 구분만 남긴다
+        audit(actor(req), body.list + '.remove', String(x.subject || x.text || x.name || '').split('\n')[0].slice(0, 80));
+      } else return sendJson(res, 400, { error: 'action must be add|update|remove' }), true;
+      s.version = (s.version || 1) + 1; saveData(s);
+      broadcast({ kind: 'data', version: s.version });
+      return sendJson(res, 200, { ok: true, version: s.version, id }), true;
+    }
+
     // 메모 CRUD — {action:'add'|'update'|'remove', ...}
     if (p === '/api/note' && req.method === 'POST') {
       if (!csrfOk(req)) return sendJson(res, 403, { error: 'forbidden (origin/content-type)' }), true;
@@ -918,6 +1191,7 @@ function createDashboardApi(core, opts) {
       let noteId;
       if (body.action === 'add') {
         const n = { id: newId('n'), title: String(body.title || '').slice(0, 200), text: String(body.text || '').slice(0, 20000), by: actor(req), updatedAt: new Date().toISOString() };
+        { const e = setArea(n, body.area) || setMatter(s, n, body.matter); if (e) return sendJson(res, 400, { error: e }), true; }
         s.notes.push(n); noteId = n.id;
         touchUser(actor(req)); audit(actor(req), 'note.add', n.title.slice(0, 80) || '(untitled)');
       } else if (body.action === 'update') {
@@ -926,6 +1200,7 @@ function createDashboardApi(core, opts) {
         if (!owns(n, actor(req))) return sendJson(res, 403, { error: 'Only the author can edit this' }), true;
         if (body.title !== undefined) n.title = String(body.title).slice(0, 200);
         if (body.text !== undefined) n.text = String(body.text).slice(0, 20000);
+        { const e = setArea(n, body.area) || setMatter(s, n, body.matter); if (e) return sendJson(res, 400, { error: e }), true; }
         n.updatedAt = new Date().toISOString(); noteId = n.id;
       } else if (body.action === 'remove') {
         const n = s.notes.find((x) => x.id === body.id);

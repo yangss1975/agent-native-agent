@@ -497,7 +497,7 @@ t('D11 Codex dialog: selected option stays a button; footer is not an option des
     assert.equal(rg.addLink(s, { from: 'n1', to: 'a1', type: 'SPAWNED' }), null);
     assert.equal(rg.addLink(s, { from: 'n1', to: 'a1', type: 'SPAWNED' }), null);
     assert.equal(s.links.length, 1, '같은 연결은 한 번만 저장');
-    assert.match(rg.addLink(s, { from: 'a1', to: 'n1', type: 'SPAWNED' }), /Note → Task\|Event/);
+    assert.match(rg.addLink(s, { from: 'a1', to: 'n1', type: 'SPAWNED' }), /Note\|Email → Task\|Event/);
     assert.equal(rg.addLink(s, { from: 'a1', to: 'e1', type: 'SCHEDULED_AS' }), null);
     assert.match(rg.addLink(s, { from: 'a1', to: 'a1', type: 'REFERS_TO' }), /itself/);
     assert.match(rg.addLink(s, { from: 'a1', to: 'day:2026-10-01', type: 'REFERS_TO' }), /not found/, 'Day는 계산되는 노드라 손으로 못 잇는다');
@@ -534,7 +534,7 @@ t('D11 Codex dialog: selected option stays a button; footer is not an option des
     const st2 = g.stats('default');
     assert.ok(st2.kinds.some((x) => x.kind === 'Client' && x.count === 1) && st2.types.some((x) => x.type === 'MENTIONED_IN' && x.count === 2));
     const o = g.ontology('default');
-    assert.deepEqual(o.kinds.map((c) => `${c.id}:${c.count}`), ['Note:1', 'Task:2', 'Event:1', 'Day:1', 'Client:1', 'Document:2']);
+    assert.deepEqual(o.kinds.map((c) => `${c.id}:${c.count}`), ['Note:1', 'Task:2', 'Event:1', 'Email:0', 'Log:0', 'Matter:0', 'Day:1', 'Client:1', 'Document:2']);
     assert.deepEqual(o.relations.filter((r) => r.count).map((r) => `${r.id}:${r.count}`), ['DUE_ON:1', 'ON:1', 'ASKED_FOR:1', 'MENTIONED_IN:2']);
     assert.ok(o.kinds.find((c) => c.id === 'Client').removable && !o.kinds.find((c) => c.id === 'Task').removable, '지식에서 온 종류만 지울 수 있다');
     assert.ok(!o.nodes.some((n) => n.kind === 'Day' || n.id === 'doc-2'), '그림에는 Day와 이어지지 않은 문서를 넣지 않는다');

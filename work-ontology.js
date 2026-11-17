@@ -16,18 +16,27 @@
 
 const firstLine = (s) => String(s || '').trim().split('\n')[0].slice(0, 60);
 
+// 모든 업무 항목에는 area가 붙을 수 있다: 'law'(변호사 업무) · 'corp'(주식회사 업무) · 없음(공통).
+// 그리고 matter(사건·상담·프로젝트 id)가 붙으면 그 Matter의 area를 따른다.
+
 module.exports = {
   classes: [
     { id: 'Note', label: 'Note', list: 'notes', desc: 'A note', title: (x) => String(x.title || '').trim() || firstLine(x.text) || 'Untitled' },
     { id: 'Task', label: 'Task', list: 'items', desc: 'A task to do', title: (x) => String(x.title || x.text || '') },
     { id: 'Event', label: 'Event', list: 'events', desc: 'A calendar event', title: (x) => String(x.title || '') },
+    { id: 'Email', label: 'Email', list: 'emails', desc: 'An email to sort: from, subject, summary, status (todo · waiting · ref · done)', title: (x) => String(x.subject || '').trim() || firstLine(x.summary) || 'Untitled' },
+    { id: 'Log', label: 'Log', list: 'logs', desc: 'A study or work record: date, kind (study · work), what was done, minutes', title: (x) => firstLine(x.text) || 'Untitled' },
+    { id: 'Matter', label: 'Matter', list: 'matters', desc: 'A case or consultation (law) or a project (corp): name, type (case · consult · project), area, client, case number, court, contact, status', title: (x) => String(x.name || '').trim() || 'Untitled' },
     { id: 'Day', label: 'Day', desc: 'A calendar day (computed from dates)' },
   ],
   relations: [
-    { id: 'SPAWNED', label: 'spawned', from: ['Note'], to: ['Task', 'Event'], made: 'explicit', desc: 'The note is where this task or event came from' },
+    { id: 'SPAWNED', label: 'spawned', from: ['Note', 'Email'], to: ['Task', 'Event'], made: 'explicit', desc: 'The note or email is where this task or event came from' },
     { id: 'SCHEDULED_AS', label: 'scheduled as', from: ['Task'], to: ['Event'], made: 'explicit', desc: 'The task is worked on during this calendar event (time block)' },
     { id: 'REFERS_TO', label: 'refers to', from: ['*'], to: ['*'], made: 'explicit', desc: 'Manual reference between two work items' },
     { id: 'DUE_ON', label: 'due on', from: ['Task'], to: ['Day'], made: 'derived', field: 'Task.due', desc: 'The task is due on this day (from Task.due)' },
+    { id: 'LOGGED_ON', label: 'logged on', from: ['Log'], to: ['Day'], made: 'derived', field: 'Log.date', desc: 'The record is for this day (from Log.date)' },
+    // 모든 업무 항목은 matter 필드로 사건·상담·프로젝트 하나에 속할 수 있다(종류마다 필드가 하나라 같은 연결을 종류별로 적는다)
+    ...['Task', 'Event', 'Note', 'Email', 'Log'].map((c) => ({ id: 'IN_MATTER', label: 'in matter', from: ['Task', 'Event', 'Note', 'Email', 'Log'], to: ['Matter'], made: 'derived', field: c + '.matter', desc: 'The item belongs to this case, consultation or project (from its matter field)' })),
     { id: 'ON', label: 'on', from: ['Event'], to: ['Day'], made: 'derived', field: 'Event.date', desc: 'The event happens on this day (from Event.date)' },
   ],
 };

@@ -548,6 +548,74 @@ body.chat-collapsed .chat-open-btn { display: inline-flex; }
 .sk-hint { text-align: center; color: #fff; font-size: 12.5px; opacity: .9; }
 body.sketching { overflow: hidden; }
 /* Work: 처음엔 비어 있다 */
+/* ---- Work: 나의 비서 (오늘 · 할 일 · 이번 주 · 메모 · 이메일 · 기록) ---- */
+.mw section[hidden] { display: none; }
+.mw-list li.mw-group { border-top: none; padding: 10px 2px 2px; margin: 0; }
+.mw-areas { display: flex; gap: 6px; margin: 0 0 12px; flex-wrap: wrap; }
+.mw-areas button { height: 34px; padding: 0 14px; border-radius: 999px; font-size: 13.5px; font-weight: 800; background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.mw-areas button.on { background: var(--text); color: var(--surface); box-shadow: none; }
+.mw-areas button.on.law { background: #5B4BC4; } .mw-areas button.on.corp { background: #0B8A6A; }
+.mw-at { font-size: 11.5px; font-weight: 800; padding: 1px 7px; border-radius: 999px; margin-right: 5px; vertical-align: 1px; background: var(--surface-2); color: var(--text-weak); }
+.mw-at.law { background: #ECE9FB; color: #4B3DB0; } .mw-at.corp { background: #E1F5EE; color: #08765A; }
+.mw-ev .mw-at { margin-right: 3px; }
+.mw-asel, .mw-msel { flex: 0 0 auto; max-width: 220px; }
+.mw-matters { margin-top: -4px; } .mw-matters button .n { color: var(--text-weak); font-weight: 700; margin-left: 3px; } .mw-matters button.on .n { color: inherit; }
+.mw-alerts { border-left: 4px solid #E5484D; } .mw-alerts h3 { margin-bottom: 6px; }
+.mw-al { display: flex; gap: 8px; align-items: baseline; padding: 5px 0; font-size: 14px; }
+.mw-al i { font-style: normal; font-size: 11.5px; font-weight: 800; padding: 1px 7px; border-radius: 999px; flex: none; }
+.mw-al.now i, .mw-al.late i { background: #FDECEC; color: #C62828; } .mw-al.today i { background: #FFF1DD; color: #A35A00; } .mw-al.soon i, .mw-al.info i { background: var(--surface-2); color: var(--text-sub); }
+.mw-h3 { margin: 0 0 8px; } .mw-h3 h3 { margin: 0; }
+.mw-chk { display: inline-flex; gap: 5px; align-items: center; font-size: 13px; font-weight: 700; color: var(--text-sub); }
+.mw-chk input { width: 16px; height: 16px; padding: 0; }
+.mw-brief { white-space: pre-wrap; font: inherit; font-size: 13.5px; line-height: 1.6; margin: 0 0 6px; color: var(--text-sub); background: var(--surface-2); border-radius: 10px; padding: 12px; max-height: 340px; overflow: auto; }
+.mw-mt { padding: 14px; margin-bottom: 10px; } .mw-mt h4 { margin: 0 0 4px; font-size: 15px; } .mw-mt.closed { opacity: .6; }
+.mw-mt .meta { color: var(--text-weak); font-size: 12.5px; margin-bottom: 8px; } .mw-mt .next { font-size: 13px; margin-bottom: 8px; }
+.mw-ev.hearing { background: #FFF1DD; } .mw-tag.hear { background: #FFF1DD; color: #A35A00; }
+.mw-mail p { margin: 0 0 8px; color: var(--text-sub); font-size: 13.5px; line-height: 1.55; } .mw-mail .err { color: #C62828; }
+.mw-tagsel { font-size: 12px !important; padding: 2px 4px !important; }
+.mw-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 4px 0 12px; }
+.mw-head h2 { font-size: 20px; font-weight: 800; margin: 0; } .mw-sub { color: var(--text-weak); font-size: 13px; }
+.mw-nav { display: flex; gap: 6px; }
+.mw-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.mw-card { padding: 16px; margin-bottom: 12px; } .mw-grid .mw-card { margin-bottom: 0; }
+.mw-card h3 { font-size: 15px; font-weight: 800; margin: 0 0 10px; }
+.mw-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; } .mw-col { flex-direction: column; align-items: stretch; }
+.mw-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.mw input, .mw textarea, .mw select { font: inherit; font-size: 14px; color: var(--text); background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; min-width: 0; }
+.mw textarea { resize: vertical; line-height: 1.5; }
+.mw-form input[name="title"], .mw-row input:not([type]) { flex: 1 1 160px; }
+.mw-add { margin-bottom: 8px; } .mw-add input { width: 100%; }
+.mw-ok { height: 36px; padding: 0 16px; border-radius: 999px; font-weight: 700; background: var(--blue); color: #fff; }
+.mw-list { list-style: none; margin: 0; padding: 0; }
+.mw-list li { display: flex; align-items: flex-start; gap: 10px; padding: 9px 2px; border-top: 1px solid var(--line-2); }
+.mw-list li:first-child { border-top: none; }
+.mw-list .t { flex: 1; min-width: 0; line-height: 1.45; overflow-wrap: anywhere; }
+.mw-list .t small { display: block; color: var(--text-weak); font-size: 12.5px; }
+.mw-list li.done .t > span { text-decoration: line-through; color: var(--text-weak); }
+.mw-list input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; padding: 0; accent-color: var(--blue); flex: none; }
+.mw-x { color: var(--text-weak); font-size: 12.5px; padding: 2px 6px; border-radius: 6px; flex: none; } .mw-x:hover { background: var(--surface-2); color: var(--text); }
+.mw-tag { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: var(--surface-2); color: var(--text-sub); margin-right: 4px; }
+.mw-tag.late { background: #FDECEC; color: #C62828; } .mw-tag.blue { background: var(--blue-weak); color: var(--blue-700); }
+.mw-empty { color: var(--text-weak); font-size: 13.5px; padding: 8px 2px; }
+.mw-link { margin-top: 8px; color: var(--blue-700); font-weight: 700; font-size: 13px; }
+.mw-group { font-size: 13px; font-weight: 800; color: var(--text-sub); margin: 14px 2px 6px; }
+.mw-strip { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.mw-stat { flex: 1 1 140px; padding: 12px 14px; } .mw-stat b { display: block; font-size: 20px; } .mw-stat span { color: var(--text-weak); font-size: 12.5px; }
+button.mw-stat { text-align: left; }
+.mw-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.mw-day { padding: 10px; min-height: 110px; } .mw-day.today { box-shadow: inset 0 0 0 2px var(--blue); }
+.mw-day h4 { margin: 0 0 6px; font-size: 13px; font-weight: 800; color: var(--text-sub); }
+.mw-ev { font-size: 13px; padding: 6px 7px; border-radius: 8px; background: var(--surface-2); margin-bottom: 5px; overflow-wrap: anywhere; }
+.mw-ev.task { background: none; box-shadow: inset 0 0 0 1px var(--line); } .mw-ev.done { opacity: .5; text-decoration: line-through; }
+.mw-ev .mw-x { float: right; padding: 0 3px; }
+@media (max-width: 768px) { .mw-week { grid-template-columns: 1fr; } .mw-day { min-height: 0; } }
+.mw-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.mw-note { padding: 14px; } .mw-note h4 { margin: 0 0 6px; font-size: 14.5px; } .mw-note p { margin: 0 0 8px; white-space: pre-wrap; color: var(--text-sub); font-size: 13.5px; line-height: 1.5; overflow-wrap: anywhere; }
+.mw-acts { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; } .mw-acts small { color: var(--text-weak); margin-right: auto; font-size: 12px; }
+.mw-chips { display: flex; gap: 6px; overflow-x: auto; margin: 0 0 10px; }
+.mw-chips button { height: 32px; padding: 0 12px; border-radius: 999px; font-size: 13px; font-weight: 700; background: var(--surface); box-shadow: 0 0 0 1px var(--line); white-space: nowrap; }
+.mw-chips button.on { background: var(--text); color: var(--surface); box-shadow: none; }
+.mw-list select { padding: 4px 6px; font-size: 12.5px; border-radius: 8px; }
 .work-empty { padding: 28px 26px; text-align: center; margin-top: 8px; } .work-empty[hidden] { display: none; }
 .work-empty h2 { font-size: 19px; font-weight: 800; margin: 0 0 8px; } .work-empty p { color: var(--text-sub); max-width: 520px; margin: 0 auto 18px; line-height: 1.6; }
 .work-acts { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
@@ -1212,7 +1280,70 @@ html.kb-open .chat-dock .composer { margin-bottom: 2px; }
 
   <!-- Work: 이 ANA가 하는 일의 화면. 처음엔 비어 있다 — PRD에 적은 대로 에이전트가 만든다(도메인 ANA는 여기에 자기 화면을 둔다) -->
   <section class="view" id="workView" role="tabpanel"><div class="wrap">
-    <div id="workArea"></div>
+    <div id="workArea"><div class="mw">
+      <nav class="subtabs" data-sub="work" role="tablist" aria-label="Work"></nav>
+      <div class="mw-areas" id="mwAreas" role="radiogroup" aria-label="업무 구분"></div>
+      <div class="mw-chips mw-matters" id="mwMatterBar" hidden></div>
+      <section data-subsec="today">
+        <div class="mw-head"><h2 id="mwTodayTitle">오늘</h2><span class="mw-sub" id="mwTodaySub"></span></div>
+        <div class="card mw-card mw-alerts" id="mwAlerts" hidden></div>
+        <div class="mw-grid">
+          <div class="card mw-card"><h3>오늘 할 일</h3>
+            <form class="mw-add mw-row" data-form="todayTask"><select name="area" class="mw-asel" aria-label="업무 구분"></select><select name="matter" class="mw-msel" aria-label="사건·프로젝트"></select><input name="title" placeholder="오늘 할 일 추가 (Enter)" autocomplete="off" required></form>
+            <ul class="mw-list" id="mwTodayTasks"></ul></div>
+          <div class="card mw-card"><h3>이번 주 일정</h3>
+            <ul class="mw-list" id="mwTodayWeek"></ul>
+            <button class="mw-link" data-go="week">일정 전체 보기 →</button></div>
+        </div>
+        <div class="mw-strip" id="mwTodayStrip"></div>
+        <div class="card mw-card" id="mwBrief"><div class="mw-head mw-h3"><h3>아침 브리핑</h3>
+          <span class="mw-row"><label class="mw-chk"><input type="checkbox" id="mwBriefOn"> 매일</label><input type="time" id="mwBriefTime" aria-label="브리핑 시각"><button class="ib-btn" id="mwBriefNow">지금 받기</button><button class="ib-btn" id="mwNotifyBtn" hidden>브라우저 알림 켜기</button></span></div>
+          <pre class="mw-brief" id="mwBriefText"></pre><div class="mw-sub" id="mwBriefState"></div></div>
+      </section>
+      <section data-subsec="matters">
+        <form class="card mw-card mw-form mw-col" data-form="matter"><input type="hidden" name="id">
+          <div class="mw-row"><select name="area" aria-label="업무 구분"><option value="law">⚖️ 변호사</option><option value="corp">🏢 회사</option></select>
+            <select name="type" aria-label="종류"></select><input name="name" placeholder="이름 (예: 김OO 손해배상)" autocomplete="off" required></div>
+          <div class="mw-row"><input name="client" placeholder="의뢰인·거래처" autocomplete="off"><input name="number" placeholder="사건번호" autocomplete="off" data-law><input name="court" placeholder="법원" autocomplete="off" data-law><input name="contact" placeholder="메일 주소 (메일 자동 분류)" autocomplete="off"></div>
+          <div class="mw-row"><button class="mw-ok" data-label>추가</button><button type="button" class="ib-btn" data-act="matterCancel" hidden>취소</button></div></form>
+        <div id="mwMatterList"></div>
+      </section>
+      <section data-subsec="tasks">
+        <form class="card mw-card mw-form" data-form="task">
+          <select name="area" class="mw-asel" aria-label="업무 구분"></select><select name="matter" class="mw-msel" aria-label="사건·프로젝트"></select><input name="title" placeholder="할 일" autocomplete="off" required><input name="due" type="date" aria-label="마감일"><button class="mw-ok">추가</button></form>
+        <div id="mwTasks"></div>
+      </section>
+      <section data-subsec="week">
+        <div class="mw-head"><h2 id="mwWeekTitle">이번 주</h2>
+          <span class="mw-nav"><button class="ib-btn" data-week="-1" aria-label="지난주">‹</button><button class="ib-btn" data-week="0">이번 주</button><button class="ib-btn" data-week="1" aria-label="다음 주">›</button></span></div>
+        <form class="card mw-card mw-form" data-form="event">
+          <select name="area" class="mw-asel" aria-label="업무 구분"></select><select name="matter" class="mw-msel" aria-label="사건·프로젝트"></select><select name="kind" aria-label="종류"><option value="">일정</option><option value="hearing">🔔 기일</option></select><input name="title" placeholder="일정·약속·기일" autocomplete="off" required><input name="date" type="date" required aria-label="날짜"><input name="time" type="time" aria-label="시간"><button class="mw-ok">추가</button></form>
+        <div class="mw-week" id="mwWeek"></div>
+      </section>
+      <section data-subsec="notes">
+        <form class="card mw-card mw-form mw-col" data-form="note"><input type="hidden" name="id">
+          <div class="mw-row"><select name="area" class="mw-asel" aria-label="업무 구분"></select><select name="matter" class="mw-msel" aria-label="사건·프로젝트"></select><input name="title" placeholder="제목 (없어도 돼요)" autocomplete="off"></div><textarea name="text" rows="3" placeholder="메모나 아이디어"></textarea>
+          <div class="mw-row"><button class="mw-ok" data-label>저장</button><button type="button" class="ib-btn" data-act="noteCancel" hidden>취소</button></div></form>
+        <div class="mw-cards" id="mwNotes"></div>
+      </section>
+      <section data-subsec="email">
+        <form class="card mw-card mw-form mw-col" data-form="email">
+          <div class="mw-row"><select name="area" class="mw-asel" aria-label="업무 구분"></select><select name="matter" class="mw-msel" aria-label="사건·프로젝트"></select><input name="from" placeholder="보낸 사람" autocomplete="off"><input name="subject" placeholder="제목" autocomplete="off"></div>
+          <textarea name="summary" rows="2" placeholder="요점이나 해야 할 일 (메일 본문을 붙여 넣어도 돼요)"></textarea>
+          <div class="mw-row"><button class="mw-ok">추가</button></div></form>
+        <div class="card mw-card" id="mwMail"></div>
+        <div class="mw-chips" id="mwEmailFilter"></div>
+        <ul class="mw-list card mw-card" id="mwEmails"></ul>
+      </section>
+      <section data-subsec="log">
+        <form class="card mw-card mw-form mw-col" data-form="log">
+          <div class="mw-row"><select name="area" class="mw-asel" aria-label="업무 구분"></select><select name="matter" class="mw-msel" aria-label="사건·프로젝트"></select><input name="date" type="date" required aria-label="날짜"><select name="kind" aria-label="종류"><option value="work">업무</option><option value="study">공부</option></select><input name="minutes" type="number" min="0" max="1440" step="5" placeholder="분" aria-label="걸린 시간(분)"></div>
+          <textarea name="text" rows="2" placeholder="오늘 한 것, 배운 것" required></textarea>
+          <div class="mw-row"><button class="mw-ok">기록</button></div></form>
+        <div class="mw-strip" id="mwLogSum"></div>
+        <div id="mwLogs"></div>
+      </section>
+    </div></div>
     <div class="card work-empty" id="workEmpty">
       <!-- PRD가 없을 때: Work는 PRD에서 나오므로 PRD로 보낸다(같은 시작 버튼을 두 곳에 두지 않는다) -->
       <div data-wstate="noprd">
@@ -1503,13 +1634,14 @@ const logOpen = new Set();          // 사용자가 펼쳐 둔 도구 묶음(다
 
 /* ================= 데이터 ================= */
 // 일 데이터(work-graph.json) — Work 화면은 처음엔 비어 있지만, 요청·지식 카드가 항목 이름을 보이고 데이터 변경 승인이 이 버전을 따른다
-let dataVersion = 0, items = [], events = [], notes = [];
+let dataVersion = 0, items = [], events = [], notes = [], emails = [], logs = [], matters = [];
 const proposals = new Map();
 async function refreshData() {
   let s;
   try { s = await (await getJSON('/api/state')); } catch { return; }
   dataVersion = s.version || 1;
-  items = s.items || []; events = s.events || []; notes = s.notes || [];
+  items = s.items || []; events = s.events || []; notes = s.notes || []; emails = s.emails || []; logs = s.logs || []; matters = s.matters || [];
+  renderMyWork();
   (s.proposals || []).forEach((p) => proposals.set(p.id, p)); renderApprovals();
   refreshPropCards();
 }
@@ -1524,6 +1656,324 @@ function nodeOf(id) {
   if (x) return { id, kind: 'Note', x, title: noteTitle(x), label: noteTitle(x) };
   return null;
 }
+
+/* ---- Work: 나의 비서 — 오늘 · 사건·프로젝트 · 할 일 · 일정 · 메모 · 이메일 · 기록 ----
+   데이터는 work-graph.json(items · events · notes · emails · logs · matters). 바꾸면 서버가 'data'를 알리고 refreshData가 다시 그린다.
+   업무 구분(area: law · corp)과 사건·상담·프로젝트(matter)로 나눠 본다. 브리핑·알림·메일은 /api/assistant. */
+const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const todayStr = () => ymd(new Date());
+const addDays = (str, n) => { const d = new Date(str + 'T00:00:00'); d.setDate(d.getDate() + n); return ymd(d); };
+const DOW = ['일', '월', '화', '수', '목', '금', '토'];
+const dayLabel = (str) => { const d = new Date(str + 'T00:00:00'); return `${d.getMonth() + 1}/${d.getDate()} (${DOW[d.getDay()]})`; };
+const weekStart = (str) => { const d = new Date(str + 'T00:00:00'); return addDays(str, -((d.getDay() + 6) % 7)); };   // 월요일부터
+let mwWeekOff = 0, mwEmailFilter = '', assist = null;
+// 업무 구분 — 변호사 업무와 주식회사 업무. 공통(구분 없음) 항목은 두 쪽 모두에 보인다.
+const AREA = { law: '⚖️ 변호사', corp: '🏢 회사', '': '공통' };
+const MTYPE = { case: '사건', consult: '상담', project: '프로젝트' };
+const MTYPES_OF = { law: ['case', 'consult'], corp: ['project'] };
+let mwArea = 'all', mwMatter = ''; try { mwArea = localStorage.getItem('ana-mw-area') || 'all'; mwMatter = localStorage.getItem('ana-mw-matter') || ''; } catch {}
+const matterOf = (x) => (x && x.matter ? matters.find((m) => m.id === x.matter) : null);
+const inArea = (x) => (mwMatter ? x.matter === mwMatter : mwArea === 'all' || !x.area || x.area === mwArea);
+const areaTag = (x) => { const m = matterOf(x); return `<button class="mw-at ${x.area || ''}" data-act="area" data-id="${x.id}" title="눌러서 구분·사건 바꾸기">${m ? `${x.area === 'law' ? '⚖️' : '🏢'} ${escapeHtml(m.name)}` : AREA[x.area || '']}</button>`; };
+const openMatters = (area) => matters.filter((m) => m.status !== 'closed' && (!area || m.area === area));
+const matterOpts = (area, sel) => `<option value="">${area ? '사건·프로젝트 없음' : '—'}</option>` + (area ? MTYPES_OF[area] : []).map((t) => {
+  const l = openMatters(area).filter((m) => m.type === t); return l.length ? `<optgroup label="${MTYPE[t]}">${l.map((m) => `<option value="${m.id}" ${m.id === sel ? 'selected' : ''}>${escapeHtml(m.name)}</option>`).join('')}</optgroup>` : '';
+}).join('');
+function fillMatterSel(form) {
+  const a = form.querySelector('.mw-asel'), m = form.querySelector('.mw-msel'); if (!a || !m) return;
+  const keep = m.value; m.innerHTML = matterOpts(a.value, keep); m.hidden = !a.value; if (keep && ![...m.options].some((o) => o.value === keep)) m.value = '';
+}
+function mwAreaBar() {
+  $('mwAreas').innerHTML = [['all', '전체'], ['law', AREA.law], ['corp', AREA.corp]].map(([k, l]) => {
+    const n = items.filter((t) => !t.done && (k === 'all' || t.area === k)).length;
+    const on = k === mwArea ? ' on' : '';
+    return `<button role="radio" aria-checked="${k === mwArea}" data-area="${k}" class="${k}${on}">${l} ${n}</button>`;
+  }).join('');
+  const bar = $('mwMatterBar'); bar.hidden = mwArea === 'all';
+  if (mwArea !== 'all') {
+    const l = openMatters(mwArea);
+    bar.innerHTML = `<button data-matter="" class="${mwMatter ? '' : 'on'}">모두</button>` + l.map((m) => `<button data-matter="${m.id}" class="${m.id === mwMatter ? 'on' : ''}">${MTYPE[m.type] === '상담' ? '💬 ' : ''}${escapeHtml(m.name)}<span class="n">${items.filter((t) => !t.done && t.matter === m.id).length}</span></button>`).join('')
+      + `<button data-go="matters">+ ${mwArea === 'law' ? '사건·상담' : '프로젝트'}</button>`;
+  }
+  const curM = matterOf({ matter: mwMatter });
+  const def = curM ? curM.area : mwArea === 'all' ? '' : mwArea;
+  document.querySelectorAll('#workArea form[data-form]').forEach((f) => {
+    const sel = f.querySelector('.mw-asel'); if (!sel) return;
+    if (!sel.options.length) sel.innerHTML = ['law', 'corp', ''].map((k) => `<option value="${k}">${AREA[k]}</option>`).join('');
+    if (!sel.dataset.touched) sel.value = def;
+    fillMatterSel(f);
+    const ms = f.querySelector('.mw-msel'); if (ms && !sel.dataset.touched && curM) ms.value = curM.id;
+  });
+}
+const EMAIL_ST = { inbox: '새 메일', todo: '할 일', waiting: '답 기다림', ref: '참고', done: '끝' };
+const LOG_KIND = { study: '공부', work: '업무' };
+const sortEv = (a, b) => (a.date + (a.time || '99')).localeCompare(b.date + (b.time || '99'));
+const hearTag = (e) => (e.kind === 'hearing' ? '<span class="mw-tag hear">🔔 기일</span>' : '');
+
+function mwTaskLi(t, today) {
+  const late = t.due && t.due < today && !t.done;
+  const due = t.due ? `<span class="mw-tag${late ? ' late' : ''}">${late ? '지남 · ' : ''}${dayLabel(t.due)}</span>` : '';
+  return `<li class="${t.done ? 'done' : ''}"><input type="checkbox" data-act="taskDone" data-id="${t.id}" ${t.done ? 'checked' : ''} aria-label="완료">
+    <span class="t"><span>${areaTag(t)}${escapeHtml(t.title || t.text || '')}</span>${due ? `<small>${due}</small>` : ''}</span>
+    <button class="mw-x" data-act="taskDel" data-id="${t.id}" aria-label="삭제">삭제</button></li>`;
+}
+function mwEvLi(e) {
+  return `<li class="${e.done ? 'done' : ''}"><span class="t"><span>${hearTag(e)}${areaTag(e)}${escapeHtml(e.title)}</span><small>${dayLabel(e.date)}${e.time ? ' · ' + e.time : ''}</small></span></li>`;
+}
+const mwVisible = () => ({ items: items.filter(inArea), events: events.filter(inArea), notes: notes.filter(inArea), emails: emails.filter(inArea), logs: logs.filter(inArea) });
+function renderMyWork() {
+  if (!$('mwTodayTasks')) return;
+  if (mwMatter && !matters.some((m) => m.id === mwMatter) && dataVersion) mwMatter = '';
+  mwAreaBar();
+  const today = todayStr();
+  const { items, events, notes, emails, logs } = mwVisible();   // 고른 업무 구분·사건만
+  // 오늘
+  const d = new Date(), curM = matterOf({ matter: mwMatter });
+  $('mwTodayTitle').textContent = `${d.getMonth() + 1}월 ${d.getDate()}일 ${DOW[d.getDay()]}요일${curM ? ` · ${curM.name}` : ''}`;
+  const tToday = items.filter((t) => t.due && (t.due === today || (t.due < today && !t.done)) && (!t.done || t.due === today))
+    .sort((a, b) => (a.done - b.done) || a.due.localeCompare(b.due));
+  const byArea = mwArea === 'all' ? ['law', 'corp', ''] : [null];   // 전체일 때는 변호사 · 회사 · 공통으로 나눠 보인다
+  $('mwTodayTasks').innerHTML = byArea.map((a) => {
+    const l = a === null ? tToday : tToday.filter((t) => (t.area || '') === a); if (!l.length) return '';
+    return (a === null ? '' : `<li class="mw-group">${AREA[a]} ${l.filter((t) => !t.done).length}</li>`) + l.map((t) => mwTaskLi(t, today)).join('');
+  }).join('') || '<li class="mw-empty">오늘 할 일이 없어요. 위에 적어 보세요.</li>';
+  const ws = weekStart(today), we = addDays(ws, 6);
+  const wk = events.filter((e) => e.date >= today && e.date <= we).sort(sortEv);
+  $('mwTodayWeek').innerHTML = wk.map(mwEvLi).join('') || '<li class="mw-empty">이번 주 남은 일정이 없어요.</li>';
+  const openTasks = items.filter((t) => !t.done).length;
+  const mailTodo = emails.filter((m) => m.status === 'todo' || m.status === 'inbox').length;
+  const logMin = logs.filter((g) => g.date >= ws && g.date <= we).reduce((n, g) => n + (g.minutes || 0), 0);
+  const left = tToday.filter((t) => !t.done).length;
+  $('mwTodaySub').textContent = left ? `남은 할 일 ${left}개` : (tToday.length ? '오늘 할 일을 다 했어요 👏' : '');
+  $('mwTodayStrip').innerHTML = [
+    ['tasks', openTasks, '열린 할 일 전체'], ['email', mailTodo, '새 메일·처리할 메일'], ['notes', notes.length, '메모'],
+    ['log', `${Math.floor(logMin / 60)}시간 ${logMin % 60}분`, '이번 주 기록'],
+  ].map(([k, n, l]) => `<button class="card mw-stat" data-go="${k}"><b>${n}</b><span>${l}</span></button>`).join('');
+  renderAssist();
+
+  // 사건·프로젝트
+  const mf = document.querySelector('[data-form="matter"]'); mwMatterTypes(mf);
+  const mlist = (a) => matters.filter((m) => m.area === a).sort((x, y) => (x.status === 'closed') - (y.status === 'closed') || String(y.at).localeCompare(String(x.at)));
+  $('mwMatterList').innerHTML = (mwArea === 'all' ? ['law', 'corp'] : [mwArea]).map((a) => {
+    const l = mlist(a);
+    return `<div class="mw-group">${AREA[a]} ${a === 'law' ? '사건·상담' : '프로젝트'} ${l.filter((m) => m.status !== 'closed').length}</div>` + (l.map((m) => {
+      const open = itemsAll().filter((t) => !t.done && t.matter === m.id);
+      const nextDue = open.filter((t) => t.due).sort((x, y) => x.due.localeCompare(y.due))[0];
+      const nextHear = eventsAll().filter((e) => e.matter === m.id && e.kind === 'hearing' && e.date >= today).sort(sortEv)[0];
+      const meta = [MTYPE[m.type], m.client, m.number, m.court].filter(Boolean).map(escapeHtml).join(' · ');
+      return `<div class="card mw-mt${m.status === 'closed' ? ' closed' : ''}"><h4>${escapeHtml(m.name)}${m.status === 'closed' ? ' <span class="mw-tag">종결</span>' : ''}</h4><div class="meta">${meta}</div>
+        <div class="next">${nextHear ? `<span class="mw-tag hear">🔔 ${dayLabel(nextHear.date)}${nextHear.time ? ' ' + nextHear.time : ''} ${escapeHtml(nextHear.title)}</span> ` : ''}${nextDue ? `<span class="mw-tag${nextDue.due < today ? ' late' : ''}">마감 ${dayLabel(nextDue.due)} ${escapeHtml(nextDue.title)}</span>` : ''}${!nextHear && !nextDue ? '<span class="mw-sub">다가오는 기일·마감 없음</span>' : ''}</div>
+        <div class="mw-acts"><small>열린 할 일 ${open.length}</small><button class="mw-x" data-act="matterOpen" data-id="${m.id}">이 건만 보기</button><button class="mw-x" data-act="matterEdit" data-id="${m.id}">고치기</button>
+        <button class="mw-x" data-act="matterClose" data-id="${m.id}">${m.status === 'closed' ? '다시 열기' : '종결'}</button><button class="mw-x" data-act="matterDel" data-id="${m.id}">삭제</button></div></div>`;
+    }).join('') || `<div class="mw-empty">${a === 'law' ? '사건이나 상담을 위에서 추가해 보세요.' : '프로젝트를 위에서 추가해 보세요.'}</div>`);
+  }).join('');
+
+  // 할 일
+  const open = items.filter((t) => !t.done), done = items.filter((t) => t.done);
+  const groups = [['지난 할 일', open.filter((t) => t.due && t.due < today)], ['오늘', open.filter((t) => t.due === today)],
+    ['다가오는', open.filter((t) => t.due && t.due > today).sort((a, b) => a.due.localeCompare(b.due))], ['날짜 없음', open.filter((t) => !t.due)],
+    [`끝낸 일 ${done.length}`, done.slice(-20).reverse()]];
+  $('mwTasks').innerHTML = groups.filter(([, l]) => l.length).map(([h, l]) => `<div class="mw-group">${h}</div><ul class="mw-list card mw-card">${l.map((t) => mwTaskLi(t, today)).join('')}</ul>`).join('')
+    || '<div class="mw-empty">아직 할 일이 없어요.</div>';
+
+  // 일정 — 한 주
+  const s0 = addDays(ws, mwWeekOff * 7);
+  $('mwWeekTitle').textContent = mwWeekOff === 0 ? '이번 주' : `${dayLabel(s0)} 주`;
+  const ef = document.querySelector('[data-form="event"] [name="date"]'); if (ef && !ef.value) ef.value = today;
+  $('mwWeek').innerHTML = [...Array(7)].map((_, i) => {
+    const day = addDays(s0, i);
+    const evs = events.filter((e) => e.date === day).sort(sortEv).map((e) => `<div class="mw-ev${e.kind === 'hearing' ? ' hearing' : ''}${e.done ? ' done' : ''}"><button class="mw-x" data-act="evDel" data-id="${e.id}" aria-label="삭제">×</button>${e.kind === 'hearing' ? '🔔 ' : ''}${areaTag(e)}${e.time ? `<b>${e.time}</b> ` : ''}${escapeHtml(e.title)}</div>`);
+    const tks = items.filter((t) => t.due === day).map((t) => `<div class="mw-ev task${t.done ? ' done' : ''}">☐ ${areaTag(t)}${escapeHtml(t.title || '')}</div>`);
+    return `<div class="card mw-day${day === today ? ' today' : ''}"><h4>${dayLabel(day)}</h4>${evs.join('')}${tks.join('')}</div>`;
+  }).join('');
+
+  // 메모
+  $('mwNotes').innerHTML = notes.slice().sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''))).map((n) => `<div class="card mw-note">
+    <h4>${areaTag(n)}${escapeHtml(n.title || '')}</h4><p>${escapeHtml(n.text || '')}</p>
+    <div class="mw-acts"><small>${n.updatedAt ? dayLabel(ymd(new Date(n.updatedAt))) : ''}</small>
+    <button class="mw-x" data-act="noteTask" data-id="${n.id}">할 일로</button><button class="mw-x" data-act="noteEdit" data-id="${n.id}">고치기</button><button class="mw-x" data-act="noteDel" data-id="${n.id}">삭제</button></div></div>`).join('')
+    || '<div class="mw-empty">떠오른 생각을 위에 적어 두세요.</div>';
+
+  // 이메일
+  const cnt = (k) => emails.filter((m) => k === 'all' || m.status === k).length;
+  const ftr = mwEmailFilter || (cnt('inbox') ? 'inbox' : 'todo');
+  $('mwEmailFilter').innerHTML = [...Object.keys(EMAIL_ST), 'all'].map((k) => `<button data-efilter="${k}" class="${k === ftr ? 'on' : ''}">${k === 'all' ? '전체' : EMAIL_ST[k]} ${cnt(k)}</button>`).join('');
+  const ml = emails.filter((m) => ftr === 'all' || m.status === ftr).sort((a, b) => String(b.at || '').localeCompare(String(a.at || ''))).slice(0, 200);
+  $('mwEmails').innerHTML = ml.map((m) => `<li><span class="t"><span>${areaTag(m)}${escapeHtml(m.subject || '(제목 없음)')}</span>
+    <small>${m.from ? escapeHtml(m.from) + ' · ' : ''}${m.at ? dayLabel(ymd(new Date(m.at))) : ''}${m.src === 'naver' ? ' · 네이버' : ''}</small>${m.summary ? `<small>${escapeHtml(m.summary.slice(0, 300))}</small>` : ''}</span>
+    <span class="mw-acts"><select data-act="emailSt" data-id="${m.id}" aria-label="상태">${Object.entries(EMAIL_ST).map(([k, l]) => `<option value="${k}" ${k === m.status ? 'selected' : ''}>${l}</option>`).join('')}</select>
+    <button class="mw-x" data-act="emailTask" data-id="${m.id}">할 일로</button><button class="mw-x" data-act="emailDel" data-id="${m.id}">삭제</button></span></li>`).join('')
+    || '<li class="mw-empty">여기에 정리할 메일이 없어요.</li>';
+  renderMail();
+
+  // 기록
+  const lf = document.querySelector('[data-form="log"] [name="date"]'); if (lf && !lf.value) lf.value = today;
+  const wl = logs.filter((g) => g.date >= ws && g.date <= we);
+  const sum = (k) => wl.filter((g) => g.kind === k).reduce((n, g) => n + (g.minutes || 0), 0);
+  const hm = (m) => `${Math.floor(m / 60)}시간 ${m % 60}분`;
+  $('mwLogSum').innerHTML = `<div class="card mw-stat"><b>${hm(sum('study'))}</b><span>이번 주 공부</span></div><div class="card mw-stat"><b>${hm(sum('work'))}</b><span>이번 주 업무</span></div>`;
+  const byDay = {}; logs.forEach((g) => (byDay[g.date] ||= []).push(g));
+  $('mwLogs').innerHTML = Object.keys(byDay).sort().reverse().slice(0, 30).map((day) => `<div class="mw-group">${dayLabel(day)}</div><ul class="mw-list card mw-card">${byDay[day].map((g) => `<li>
+    <span class="t"><span>${areaTag(g)}<span class="mw-tag ${g.kind === 'study' ? 'blue' : ''}">${LOG_KIND[g.kind] || ''}</span>${escapeHtml(g.text || '')}</span>${g.minutes ? `<small>${g.minutes}분</small>` : ''}</span>
+    <button class="mw-x" data-act="logDel" data-id="${g.id}" aria-label="삭제">삭제</button></li>`).join('')}</ul>`).join('')
+    || '<div class="mw-empty">오늘 한 공부나 일을 짧게 남겨 보세요.</div>';
+}
+const itemsAll = () => items, eventsAll = () => events;   // 화면 필터와 상관없는 전체 목록(renderMyWork 안에서는 같은 이름이 걸러진 목록이라)
+function mwMatterTypes(f) {
+  if (!f) return; const a = f.area.value, cur = f.type.value;
+  f.type.innerHTML = MTYPES_OF[a].map((t) => `<option value="${t}">${MTYPE[t]}</option>`).join(''); if (MTYPES_OF[a].includes(cur)) f.type.value = cur;
+  f.querySelectorAll('[data-law]').forEach((x) => { x.hidden = a !== 'law'; });
+  if (!f.id.value && !f.dataset.touched && mwArea !== 'all') f.area.value = mwArea;
+}
+function mwMatterEdit(m) {
+  const f = document.querySelector('[data-form="matter"]');
+  f.id.value = m ? m.id : ''; f.area.value = m ? m.area : (mwArea === 'all' ? 'law' : mwArea); mwMatterTypes(f);
+  for (const k of ['name', 'client', 'number', 'court', 'contact']) f[k].value = m ? m[k] || '' : '';
+  if (m) f.type.value = m.type;
+  f.querySelector('[data-label]').textContent = m ? '고친 내용 저장' : '추가'; f.querySelector('[data-act="matterCancel"]').hidden = !m;
+  if (m) { f.scrollIntoView({ behavior: 'smooth', block: 'center' }); f.name.focus(); }
+}
+
+/* ---- 브리핑 · 마감·기일 알림 · 네이버 메일 ---- */
+async function refreshAssist() {
+  try { assist = await getJSON('/api/assistant'); } catch { return; }
+  renderAssist(); renderMail(); notifyAlerts();
+}
+const ALERT_L = { now: '곧', late: '지남', today: '오늘', soon: '다가옴', info: '기일' };
+function renderAssist() {
+  if (!assist || !$('mwAlerts')) return;
+  const al = assist.alerts.filter((a) => {
+    const x = [...items, ...events].find((y) => y.id === a.ref); return !x || inArea(x);
+  });
+  $('mwAlerts').hidden = !al.length;
+  $('mwAlerts').innerHTML = `<h3>마감·기일 알림 ${al.length}</h3>` + al.slice(0, 12).map((a) => `<div class="mw-al ${a.level}"><i>${ALERT_L[a.level]}</i><span>${a.area ? AREA[a.area] + ' · ' : ''}${escapeHtml(a.text)}</span></div>`).join('');
+  const b = assist.briefing, t = assist.today;
+  if (document.activeElement !== $('mwBriefTime')) $('mwBriefTime').value = b.time;
+  $('mwBriefOn').checked = b.on;
+  $('mwBriefText').textContent = t ? t.text : assist.preview;
+  $('mwBriefState').textContent = t ? (t.sent ? `${new Date(t.sent).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}에 채팅으로 보냈어요` : `채팅으로 아직 못 보냈어요(${({ 'no-session': '대시보드가 열린 적이 없어요', 'agent-off': '에이전트가 꺼져 있어요', draft: '입력창에 쓰다 만 글이 있어요', busy: '에이전트가 다른 일을 하는 중이에요' })[t.tried] || t.tried || ''}) — 곧 다시 보내요`)
+    : (b.on ? `매일 ${b.time}에 에이전트가 채팅으로 보내요. 아래는 지금 기준 미리보기예요.` : '매일 브리핑이 꺼져 있어요. 아래는 지금 기준 미리보기예요.');
+  $('mwNotifyBtn').hidden = !('Notification' in window) || Notification.permission === 'granted';
+}
+// 새 알림만 브라우저 알림으로 — 같은 알림은 한 번만(localStorage에 기억)
+function notifyAlerts() {
+  if (!assist || !('Notification' in window) || Notification.permission !== 'granted') return;
+  let seen = {}; try { seen = JSON.parse(localStorage.getItem('ana-mw-alerted') || '{}'); } catch {}
+  const today = todayStr();
+  for (const a of assist.alerts) {
+    if (a.level === 'info') continue;
+    const key = a.level === 'late' ? `${a.id}:${today}` : a.id;   // 지난 마감은 하루에 한 번
+    if (seen[key]) continue; seen[key] = today;
+    try { new Notification(`${ALERT_L[a.level]} · ${a.area ? AREA[a.area] : '나의 비서'}`, { body: a.text, tag: key }); } catch {}
+  }
+  for (const k of Object.keys(seen)) if (seen[k] < addDays(today, -14)) delete seen[k];
+  try { localStorage.setItem('ana-mw-alerted', JSON.stringify(seen)); } catch {}
+}
+function renderMail() {
+  if (!assist || !$('mwMail')) return;
+  const m = assist.mail;
+  $('mwMail').innerHTML = m.connected ? `<div class="mw-head mw-h3"><h3>네이버 메일 · ${escapeHtml(m.user)}</h3><span class="mw-row"><button class="ib-btn" data-act="mailSync" ${m.busy ? 'disabled' : ''}>${m.busy ? '가져오는 중…' : '지금 가져오기'}</button><button class="ib-btn" data-act="mailOff">연결 끊기</button></span></div>
+    <p class="mw-mail">${m.lastSync ? `마지막으로 ${new Date(m.lastSync).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}에 확인했어요${m.added ? ` · 새 메일 ${m.added}통` : ''}. 10분마다 새 메일을 가져와요(읽음 표시는 바뀌지 않아요).` : '아직 가져오지 않았어요.'}</p>${m.error ? `<p class="mw-mail err">${escapeHtml(m.error)}</p>` : ''}`
+    : `<h3>네이버 메일 연결</h3><div class="mw-mail"><p>받은편지함의 새 메일을 10분마다 가져와 <b>새 메일</b>에 넣어요. 메일함은 읽기만 하고, 비밀번호는 이 노트북의 앱 데이터 폴더에만 저장해요.<br>
+      먼저 네이버 메일 › 환경설정 › <b>POP3/IMAP 설정</b>에서 <b>IMAP/SMTP 사용</b>을 켜 주세요. 2단계 인증을 쓰면 네이버 › 보안설정에서 만든 <b>애플리케이션 비밀번호</b>를 넣어야 해요.</p></div>
+      <form class="mw-form" data-form="mail"><input name="user" placeholder="네이버 아이디" autocomplete="username" required><input name="pass" type="password" placeholder="비밀번호 또는 애플리케이션 비밀번호" autocomplete="current-password" required><button class="mw-ok">연결</button></form>`;
+}
+setInterval(refreshAssist, 60000);
+setTimeout(refreshAssist, 0);   // 부팅 뒤에(뒤에 선언된 것들이 준비된 다음)
+$('mwBriefNow').onclick = async () => {
+  const b = $('mwBriefNow'); b.disabled = true; b.textContent = '보내는 중…';
+  const r = await mwPost('/api/assistant/briefing', {}); b.disabled = false; b.textContent = '지금 받기';
+  if (r) { refreshAssist(); if (r.sent) openChat(); }
+};
+$('mwBriefOn').onchange = () => mwPost('/api/assistant', { briefing: { on: $('mwBriefOn').checked } }).then(refreshAssist);
+$('mwBriefTime').onchange = () => { if ($('mwBriefTime').value) mwPost('/api/assistant', { briefing: { time: $('mwBriefTime').value } }).then(refreshAssist); };
+$('mwNotifyBtn').onclick = () => Notification.requestPermission().then(() => { renderAssist(); notifyAlerts(); });
+
+async function mwPost(path, body) {
+  try { const r = await post(path, body); if (!r.ok) { const e = await r.json().catch(() => ({})); showErr(e.error || '저장하지 못했어요'); return null; } const j = await r.json(); refreshData(); return j; }
+  catch { showErr('서버에 닿지 않아요'); return null; }
+}
+$('workArea').addEventListener('submit', async (e) => {
+  const f = e.target.closest('form[data-form]'); if (!f) return; e.preventDefault();
+  const v = Object.fromEntries(new FormData(f)); const kind = f.dataset.form; let ok;
+  const where = { area: v.area, matter: v.matter || undefined };
+  if (kind === 'todayTask') ok = await mwPost('/api/todo', { title: v.title, due: todayStr(), ...where });
+  else if (kind === 'task') ok = await mwPost('/api/todo', { title: v.title, due: v.due || undefined, ...where });
+  else if (kind === 'event') ok = await mwPost('/api/event', { action: 'add', title: v.title, date: v.date, time: v.time, kind: v.kind, ...where });
+  else if (kind === 'note') {
+    if (!v.title.trim() && !v.text.trim()) return;
+    ok = await mwPost('/api/note', v.id ? { action: 'update', id: v.id, title: v.title, text: v.text, area: v.area, matter: v.matter || '' } : { action: 'add', title: v.title, text: v.text, ...where });
+    if (ok) mwNoteEdit(null);
+  } else if (kind === 'email') ok = await mwPost('/api/mywork', { list: 'emails', action: 'add', from: v.from, subject: v.subject, summary: v.summary, ...where });
+  else if (kind === 'log') ok = await mwPost('/api/mywork', { list: 'logs', action: 'add', date: v.date, kind: v.kind, minutes: v.minutes, text: v.text, ...where });
+  else if (kind === 'matter') {
+    const m = { list: 'matters', area: v.area, type: v.type, name: v.name, client: v.client, number: v.area === 'law' ? v.number : '', court: v.area === 'law' ? v.court : '', contact: v.contact };
+    ok = await mwPost('/api/mywork', v.id ? { ...m, action: 'update', id: v.id } : { ...m, action: 'add' });
+    if (ok) { mwMatterEdit(null); return; }
+  } else if (kind === 'mail') {
+    const btn = f.querySelector('button'); btn.disabled = true; btn.textContent = '확인하는 중…';
+    ok = await mwPost('/api/mail/config', { user: v.user, pass: v.pass }); btn.disabled = false; btn.textContent = '연결';
+    if (ok) { mwEmailFilter = 'inbox'; refreshAssist(); }
+    return;
+  }
+  if (ok) { const keep = kind === 'log' ? ['date', 'kind'] : kind === 'event' ? ['date', 'kind'] : []; f.querySelectorAll('input:not([type=hidden]), textarea').forEach((x) => { if (!keep.includes(x.name)) x.value = ''; }); }
+});
+function mwNoteEdit(n) {
+  const f = document.querySelector('[data-form="note"]');
+  f.id.value = n ? n.id : ''; f.title.value = n ? n.title || '' : ''; f.text.value = n ? n.text || '' : '';
+  const a = f.querySelector('.mw-asel'); a.value = n ? n.area || '' : (mwArea === 'all' ? '' : mwArea); a.dataset.touched = n ? '1' : ''; fillMatterSel(f); f.querySelector('.mw-msel').value = n ? n.matter || '' : '';
+  f.querySelector('[data-label]').textContent = n ? '고친 내용 저장' : '저장'; f.querySelector('[data-act="noteCancel"]').hidden = !n;
+  if (n) { f.scrollIntoView({ behavior: 'smooth', block: 'center' }); f.text.focus(); }
+}
+// 구분 태그를 누르면 그 자리에서 구분·사건을 고른다
+function mwTagPicker(btn, x) {
+  const opt = (v, l, on) => `<option value="${v}" ${on ? 'selected' : ''}>${l}</option>`;
+  const cur = x.matter ? 'm:' + x.matter : 'a:' + (x.area || '');
+  const html = opt('a:', '공통', cur === 'a:') + ['law', 'corp'].map((a) => `<optgroup label="${AREA[a]}">${opt('a:' + a, AREA[a] + ' (사건 없음)', cur === 'a:' + a)}${openMatters(a).map((m) => opt('m:' + m.id, m.name, cur === 'm:' + m.id)).join('')}</optgroup>`).join('');
+  const sel = document.createElement('select'); sel.className = 'mw-tagsel'; sel.innerHTML = html; sel.setAttribute('aria-label', '구분·사건');
+  btn.replaceWith(sel); sel.focus();
+  let done = false;
+  const finish = () => { if (done) return; done = true; const [k, v] = sel.value.split(':'); if (sel.value !== cur) mwPost('/api/area', k === 'm' ? { id: x.id, matter: v } : { id: x.id, area: v }); else renderMyWork(); };
+  sel.addEventListener('change', finish); sel.addEventListener('blur', finish);
+}
+$('workArea').addEventListener('click', (e) => {
+  const ar = e.target.closest('[data-area]'); if (ar) { mwArea = ar.dataset.area; mwMatter = ''; try { localStorage.setItem('ana-mw-area', mwArea); localStorage.setItem('ana-mw-matter', ''); } catch {} document.querySelectorAll('#workArea .mw-asel').forEach((x) => delete x.dataset.touched); renderMyWork(); return; }
+  const mt = e.target.closest('[data-matter]'); if (mt) { mwMatter = mt.dataset.matter; try { localStorage.setItem('ana-mw-matter', mwMatter); } catch {} document.querySelectorAll('#workArea .mw-asel').forEach((x) => delete x.dataset.touched); renderMyWork(); return; }
+  const go = e.target.closest('[data-go]'); if (go) { openSub('work', go.dataset.go); renderMyWork(); return; }
+  const w = e.target.closest('[data-week]'); if (w) { mwWeekOff = +w.dataset.week === 0 ? 0 : mwWeekOff + +w.dataset.week; renderMyWork(); return; }
+  const ef = e.target.closest('[data-efilter]'); if (ef) { mwEmailFilter = ef.dataset.efilter; renderMyWork(); return; }
+  const b = e.target.closest('[data-act]'); if (!b || b.tagName === 'SELECT') return;
+  const id = b.dataset.id, act = b.dataset.act;
+  if (act === 'area') { const x = [...items, ...events, ...notes, ...emails, ...logs].find((y) => y.id === id); if (x) mwTagPicker(b, x); }
+  else if (act === 'taskDone') mwPost('/api/done', { id, done: b.checked });
+  else if (act === 'taskDel') mwPost('/api/todo-remove', { id });
+  else if (act === 'evDel') mwPost('/api/event', { action: 'remove', id });
+  else if (act === 'noteDel') mwPost('/api/note', { action: 'remove', id });
+  else if (act === 'noteEdit') mwNoteEdit(notes.find((n) => n.id === id));
+  else if (act === 'noteCancel') mwNoteEdit(null);
+  else if (act === 'noteTask') { const n = notes.find((x) => x.id === id); if (n) mwPost('/api/todo', { title: noteTitle(n), from: id, area: n.area, matter: n.matter }).then((r) => r && openSub('work', 'tasks')); }
+  else if (act === 'emailTask') { const m = emails.find((x) => x.id === id); if (m) mwPost('/api/todo', { title: `메일: ${m.subject || m.from || ''}`.trim(), from: id, area: m.area, matter: m.matter }).then((r) => r && mwPost('/api/mywork', { list: 'emails', action: 'update', id, status: 'done' })); }
+  else if (act === 'emailDel') mwPost('/api/mywork', { list: 'emails', action: 'remove', id });
+  else if (act === 'logDel') mwPost('/api/mywork', { list: 'logs', action: 'remove', id });
+  else if (act === 'matterOpen') { const m = matters.find((x) => x.id === id); if (m) { mwArea = m.area; mwMatter = m.id; try { localStorage.setItem('ana-mw-area', mwArea); localStorage.setItem('ana-mw-matter', mwMatter); } catch {} openSub('work', 'today'); renderMyWork(); } }
+  else if (act === 'matterEdit') mwMatterEdit(matters.find((x) => x.id === id));
+  else if (act === 'matterCancel') mwMatterEdit(null);
+  else if (act === 'matterClose') { const m = matters.find((x) => x.id === id); if (m) mwPost('/api/mywork', { list: 'matters', action: 'update', id, status: m.status === 'closed' ? 'open' : 'closed' }); }
+  else if (act === 'matterDel') {
+    if (b.dataset.sure) mwPost('/api/mywork', { list: 'matters', action: 'remove', id });
+    else { b.dataset.sure = '1'; b.textContent = '정말 삭제? (항목은 남아요)'; setTimeout(() => { if (b.isConnected) { delete b.dataset.sure; b.textContent = '삭제'; } }, 4000); }
+  }
+  else if (act === 'mailSync') { b.disabled = true; b.textContent = '가져오는 중…'; mwPost('/api/mail/sync', {}).then(refreshAssist); }
+  else if (act === 'mailOff') {
+    if (b.dataset.sure) mwPost('/api/mail/config', { remove: true }).then(refreshAssist);
+    else { b.dataset.sure = '1'; b.textContent = '정말 끊기?'; setTimeout(() => { if (b.isConnected) { delete b.dataset.sure; b.textContent = '연결 끊기'; } }, 4000); }
+  }
+});
+$('workArea').addEventListener('change', (e) => {
+  if (e.target.classList.contains('mw-asel')) { e.target.dataset.touched = '1'; fillMatterSel(e.target.form); }   // 사람이 고른 구분은 다시 그려도 지킨다
+  if (e.target.closest('[data-form="matter"]') && e.target.name === 'area') { e.target.form.dataset.touched = '1'; mwMatterTypes(e.target.form); }
+  const sel = e.target.closest('select[data-act="emailSt"]'); if (sel) mwPost('/api/mywork', { list: 'emails', action: 'update', id: sel.dataset.id, status: sel.value });
+});
 
 /* ---- Work: 처음엔 비어 있다. PRD를 보고 에이전트가 화면을 만든다 ---- */
 function renderWork() {
@@ -1772,6 +2222,7 @@ var SUBTABS = {
   prd: [['current', 'Current'], ['history', 'History']],
   knowledge: [['ontology', 'Ontology'], ['graph', 'Graph'], ['documents', 'Documents']],
   update: STATUS_TABS,
+  work: [['today', '오늘'], ['matters', '사건·프로젝트'], ['tasks', '할 일'], ['week', '일정'], ['notes', '메모'], ['email', '이메일'], ['log', '기록']],
 };
 var subSel = {}; try { subSel = JSON.parse(localStorage.getItem('ana-subtabs') || '{}') || {}; } catch {}
 var subCounts = {};
@@ -1794,7 +2245,7 @@ function kGraphFit() { const g = $('kGraph'); if (g && !g.hidden && g.clientWidt
 function setSubCount(v, k, n) { if (!SUBTABS) return; const c = (subCounts[v] ||= {}); if (c[k] === n) return; c[k] = n; renderSubtabs(v); }
 function openSub(v, k) { subSel[v] = k; try { localStorage.setItem('ana-subtabs', JSON.stringify(subSel)); } catch {} renderSubtabs(v); }
 // 상태 하위 탭을 바꾸면 그 목록을 다시 그린다
-const RENDER_SUB = { requests: () => renderRequestsAll(), evolve: () => renderEvolve(), update: () => renderUpdates() };
+const RENDER_SUB = { work: () => renderMyWork(), requests: () => renderRequestsAll(), evolve: () => renderEvolve(), update: () => renderUpdates() };
 document.addEventListener('click', (e) => {
   const b = e.target.closest('.subtabs button[data-k]'); if (!b) return;
   const v = b.closest('.subtabs').dataset.sub; openSub(v, b.dataset.k);
@@ -3571,6 +4022,7 @@ function connect() {
       case 'status': if ('dialog' in d && health) health.dialog = d.dialog; sessionAlive = d.session; busy = d.busy; $('typTx').textContent = d.spin || 'Working…'; if (d.resync !== undefined) screenResync = !!d.resync; renderStatus(); updateEmpty(); reconcile(); break;
       case 'draft': renderDraft(d.draft); break;
       case 'proposal': proposals.set(d.proposal.id, d.proposal); refreshPropCards(); renderApprovals(); break;
+      case 'assistant': refreshAssist(); break;   // 브리핑·메일 상태가 바뀌었다
       case 'data': if (d.version !== dataVersion) refreshData(); if ($('knowledgeView').classList.contains('on')) refreshKnowledge(); break;   // 업무 항목도 Knowledge 그래프에 보인다
       // 다이얼로그 열림/닫힘은 스트림으로 즉시 반영(health 폴은 백그라운드 탭에서 멈춘다)
       case 'dialog': if (health) health.dialog = !!d.dialog; if (!dialogBusy) { dialogInfo = d.dialog; renderStatus(); } break;
